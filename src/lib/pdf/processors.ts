@@ -43,7 +43,7 @@ const splitPdf: ProcessorFn = async (files, onProgress) => {
     newDoc.addPage(page);
     const pdfBytes = await newDoc.save();
     results.push({
-      blob: new Blob([pdfBytes], { type: 'application/pdf' }),
+      blob: pdfBlob(pdfBytes),
       filename: `page_${i + 1}.pdf`
     });
     onProgress(10 + ((i + 1) / pageCount) * 85, `Extraction page ${i + 1}/${pageCount}…`);

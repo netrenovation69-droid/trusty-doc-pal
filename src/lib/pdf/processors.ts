@@ -178,7 +178,7 @@ const addWatermark: ProcessorFn = async (files, onProgress, options) => {
   });
   const result = await doc.save();
   onProgress(100, 'Terminé !');
-  return { files: [{ blob: new Blob([result], { type: 'application/pdf' }), filename: 'filigrané.pdf' }] };
+  return { files: [{ blob: pdfBlob(result), filename: 'filigrané.pdf' }] };
 };
 
 const editPdf: ProcessorFn = async (files, onProgress, options) => {

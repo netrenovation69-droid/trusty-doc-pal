@@ -72,7 +72,7 @@ const compressPdf: ProcessorFn = async (files, onProgress) => {
   const reduction = ((1 - newSize / originalSize) * 100).toFixed(1);
   onProgress(100, 'Terminé !');
   return {
-    files: [{ blob: new Blob([result], { type: 'application/pdf' }), filename: 'compressé.pdf' }],
+    files: [{ blob: pdfBlob(result), filename: 'compressé.pdf' }],
     message: `Taille réduite de ${reduction}% (${formatBytes(originalSize)} → ${formatBytes(newSize)})`
   };
 };

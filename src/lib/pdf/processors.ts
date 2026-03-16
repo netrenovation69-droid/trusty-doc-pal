@@ -260,7 +260,7 @@ const purgeDna: ProcessorFn = async (files, onProgress) => {
   const result = await doc.save();
   onProgress(100, 'Terminé !');
   return {
-    files: [{ blob: new Blob([result], { type: 'application/pdf' }), filename: 'purgé.pdf' }],
+    files: [{ blob: pdfBlob(result), filename: 'purgé.pdf' }],
     message: 'Toutes les métadonnées (auteur, dates, logiciel, mots-clés) ont été supprimées.'
   };
 };

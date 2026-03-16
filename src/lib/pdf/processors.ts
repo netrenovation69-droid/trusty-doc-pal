@@ -1,7 +1,7 @@
 import type { ProcessorFn, ProcessedResult, ProgressCallback } from './types';
 
 // Helper to create PDF blob from Uint8Array (fixes TS Uint8Array/BlobPart compat)
-const pdfBlob = (bytes: Uint8Array) => new Blob([bytes.buffer], { type: 'application/pdf' });
+const pdfBlob = (bytes: Uint8Array) => new Blob([bytes as unknown as ArrayBuffer], { type: 'application/pdf' });
 
 // Lazy imports for code splitting
 const loadPdfLib = () => import('pdf-lib');

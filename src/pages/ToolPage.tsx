@@ -1,19 +1,84 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { tools } from "@/constants/tools";
-import { Upload, ShieldCheck, ChevronLeft } from "lucide-react";
-import { motion } from "framer-motion";
+import { useState, useCallback, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { tools } from '@/constants/tools';
+import { toolConfigs } from '@/lib/pdf/tool-config';
+import { processors } from '@/lib/pdf/processors';
+import { ChevronLeft, ShieldCheck, Lock, Cpu } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { FileUploadZone } from '@/components/docusur/FileUploadZone';
+import { ToolOptions } from '@/components/docusur/ToolOptions';
+import { ProcessingView } from '@/components/docusur/ProcessingView';
+import type { ProcessedResult, ToolOption } from '@/lib/pdf/types';
+
+type Stage = 'upload' | 'processing' | 'done' | 'error';
 
 const ToolPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const tool = tools.find((t) => t.id === id);
+  const config = id ? toolConfigs[id] : undefined;
 
-  if (!tool) {
-    return (
-      <div className="p-20 text-center text-muted-foreground">
-        Outil non trouvé.
-      </div>
-    );
+  const [files, setFiles] = useState<File[]>([]);
+  const [options, setOptions] = useState<Record<string, string | number>>({});
+  const [stage, setStage] = useState<Stage>('upload');
+  const [progress, setProgress] = useState(0);
+  const [status, setStatus] = useState('');
+  const [result, setResult] = useState<ProcessedResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // Initialize default option values
+  useEffect(() => {
+    if (config?.options) {
+      const defaults: Record<string, string | number> = {};
+      config.options.forEach((opt) => {
+        if (opt.defaultValue !== undefined) defaults[opt.key] = opt.defaultValue;
+      });
+      setOptions(defaults);
+    }
+  }, [config]);
+
+  const canProcess = useCallback(() => {
+    if (!config || !files.length) return false;
+    if (config.minFiles && files.length < config.minFiles) return false;
+    if (config.options) {
+      const missing = config.options.filter(o => o.required && !options[o.key]);
+      if (missing.length > 0) return false;
+    }
+    return true;
+  }, [config, files, options]);
+
+  const handleProcess = async () => {
+    if (!id || !processors[id]) return;
+    setStage('processing');
+    setProgress(0);
+    setStatus('Initialisation…');
+    setResult(null);
+    setError(null);
+
+    try {
+      const res = await processors[id](files, (p, s) => {
+        setProgress(p);
+        if (s) setStatus(s);
+      }, options);
+      setResult(res);
+      setStage('done');
+    } catch (err: any) {
+      setError(err.message || 'Une erreur est survenue.');
+      setStage('error');
+    }
+  };
+
+  const handleReset = () => {
+    setFiles([]);
+    setStage('upload');
+    setProgress(0);
+    setStatus('');
+    setResult(null);
+    setError(null);
+  };
+
+  if (!tool || !config) {
+    return <div className="p-20 text-center text-muted-foreground">Outil non trouvé.</div>;
   }
 
   return (
@@ -40,26 +105,72 @@ const ToolPage = () => {
           </div>
         </motion.div>
 
-        <div className="bg-card p-10 rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center text-center gap-6 hover:border-trust-blue/30 transition-all">
+        {/* Coming Soon */}
+        {!config.available ? (
           <motion.div
-            animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-card p-10 rounded-2xl border border-border text-center space-y-6"
           >
-            <Upload className="w-8 h-8 text-muted-foreground" />
+            <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center mx-auto">
+              <Cpu className="w-10 h-10 text-muted-foreground" />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-primary mb-2">En cours de développement</p>
+              <p className="text-muted-foreground text-sm max-w-lg mx-auto">{config.comingSoonMessage}</p>
+            </div>
+            <div className="flex items-center justify-center gap-2 text-xs text-trust-blue font-medium">
+              <Lock className="w-3.5 h-3.5" />
+              Fidèle à notre philosophie : zéro serveur, zéro stockage
+            </div>
           </motion.div>
-          <div>
-            <p className="text-xl font-bold text-primary mb-1">Déposez vos fichiers ici</p>
-            <p className="text-muted-foreground text-sm">ou cliquez pour parcourir vos documents</p>
-          </div>
-          <button className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-bold hover:opacity-90 transition shadow-md">
-            Sélectionner les fichiers
-          </button>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
-            <ShieldCheck className="w-3 h-3" />
-            Vos fichiers sont traités localement et en toute sécurité
-          </div>
-        </div>
+        ) : (
+          <>
+            {/* Upload & Options */}
+            {stage === 'upload' && (
+              <div className="space-y-6">
+                <FileUploadZone config={config} files={files} onFilesChange={setFiles} />
+
+                {config.options && files.length > 0 && (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                    <ToolOptions options={config.options} values={options} onChange={setOptions} />
+                  </motion.div>
+                )}
+
+                {files.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-3"
+                  >
+                    <button
+                      onClick={handleProcess}
+                      disabled={!canProcess()}
+                      className="w-full bg-primary text-primary-foreground py-4 rounded-xl font-bold text-lg hover:opacity-90 transition shadow-lg disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      Lancer le traitement
+                    </button>
+                    <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      Traitement 100% local — vos fichiers restent dans la RAM de votre navigateur
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+            )}
+
+            {/* Processing / Done / Error */}
+            {(stage === 'processing' || stage === 'done' || stage === 'error') && (
+              <ProcessingView
+                progress={progress}
+                status={status}
+                result={result}
+                error={error}
+                onReset={handleReset}
+              />
+            )}
+          </>
+        )}
       </div>
     </div>
   );

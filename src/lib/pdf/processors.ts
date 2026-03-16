@@ -121,7 +121,7 @@ const repairPdf: ProcessorFn = async (files, onProgress) => {
   const result = await doc.save();
   onProgress(100, 'Terminé !');
   return {
-    files: [{ blob: new Blob([result], { type: 'application/pdf' }), filename: 'réparé.pdf' }],
+    files: [{ blob: pdfBlob(result), filename: 'réparé.pdf' }],
     message: 'Le PDF a été rechargé et reconstruit avec succès.'
   };
 };

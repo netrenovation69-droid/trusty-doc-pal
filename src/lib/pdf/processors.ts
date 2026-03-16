@@ -302,7 +302,7 @@ const censorPdf: ProcessorFn = async (files, onProgress, options) => {
 
   const result = await doc.save();
   onProgress(100, 'Terminé !');
-  return { files: [{ blob: new Blob([result], { type: 'application/pdf' }), filename: 'censuré.pdf' }] };
+  return { files: [{ blob: pdfBlob(result), filename: 'censuré.pdf' }] };
 };
 
 // ==================== CONVERSION ====================

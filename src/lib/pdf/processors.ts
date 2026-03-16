@@ -107,7 +107,7 @@ const organizePdf: ProcessorFn = async (files, onProgress, options) => {
   onProgress(80, 'Sauvegarde…');
   const result = await newDoc.save();
   onProgress(100, 'Terminé !');
-  return { files: [{ blob: new Blob([result], { type: 'application/pdf' }), filename: 'organisé.pdf' }] };
+  return { files: [{ blob: pdfBlob(result), filename: 'organisé.pdf' }] };
 };
 
 const repairPdf: ProcessorFn = async (files, onProgress) => {

@@ -221,7 +221,7 @@ const signPdf: ProcessorFn = async (files, onProgress, options) => {
   page.drawText('DocuSûr – Signature locale', { x: width - 240, y: 70, size: 7, font, color: rgb(0.5, 0.5, 0.5) });
   const result = await doc.save();
   onProgress(100, 'Terminé !');
-  return { files: [{ blob: new Blob([result], { type: 'application/pdf' }), filename: 'signé.pdf' }] };
+  return { files: [{ blob: pdfBlob(result), filename: 'signé.pdf' }] };
 };
 
 const cropPdf: ProcessorFn = async (files, onProgress, options) => {

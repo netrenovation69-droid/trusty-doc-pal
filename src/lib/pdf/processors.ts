@@ -27,7 +27,7 @@ const mergePdfs: ProcessorFn = async (files, onProgress) => {
   onProgress(95, 'Finalisation…');
   const result = await merged.save();
   onProgress(100, 'Terminé !');
-  return { files: [{ blob: new Blob([result], { type: 'application/pdf' }), filename: 'fusionné.pdf' }] };
+  return { files: [{ blob: pdfBlob(result), filename: 'fusionné.pdf' }] };
 };
 
 const splitPdf: ProcessorFn = async (files, onProgress) => {

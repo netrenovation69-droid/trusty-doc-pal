@@ -366,7 +366,7 @@ const pdfToA: ProcessorFn = async (files, onProgress) => {
   const result = await doc.save();
   onProgress(100, 'Terminé !');
   return {
-    files: [{ blob: new Blob([result], { type: 'application/pdf' }), filename: 'archive_pdfa.pdf' }],
+    files: [{ blob: pdfBlob(result), filename: 'archive_pdfa.pdf' }],
     message: 'Métadonnées d\'archivage appliquées. Note : la conformité PDF/A complète nécessite une validation par un outil certifié.'
   };
 };

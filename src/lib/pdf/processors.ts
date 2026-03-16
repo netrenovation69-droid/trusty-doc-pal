@@ -198,7 +198,7 @@ const editPdf: ProcessorFn = async (files, onProgress, options) => {
   page.drawText(text, { x, y: page.getSize().height - y, size: 14, font, color: rgb(0, 0, 0) });
   const result = await doc.save();
   onProgress(100, 'Terminé !');
-  return { files: [{ blob: new Blob([result], { type: 'application/pdf' }), filename: 'modifié.pdf' }] };
+  return { files: [{ blob: pdfBlob(result), filename: 'modifié.pdf' }] };
 };
 
 const signPdf: ProcessorFn = async (files, onProgress, options) => {

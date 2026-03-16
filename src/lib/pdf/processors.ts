@@ -88,7 +88,7 @@ const rotatePdf: ProcessorFn = async (files, onProgress, options) => {
   onProgress(80, 'Sauvegarde…');
   const result = await doc.save();
   onProgress(100, 'Terminé !');
-  return { files: [{ blob: new Blob([result], { type: 'application/pdf' }), filename: 'pivoté.pdf' }] };
+  return { files: [{ blob: pdfBlob(result), filename: 'pivoté.pdf' }] };
 };
 
 const organizePdf: ProcessorFn = async (files, onProgress, options) => {

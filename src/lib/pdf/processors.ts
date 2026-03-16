@@ -350,7 +350,7 @@ const jpgToPdf: ProcessorFn = async (files, onProgress) => {
   }
   const result = await doc.save();
   onProgress(100, 'Terminé !');
-  return { files: [{ blob: new Blob([result], { type: 'application/pdf' }), filename: 'images.pdf' }] };
+  return { files: [{ blob: pdfBlob(result), filename: 'images.pdf' }] };
 };
 
 const pdfToA: ProcessorFn = async (files, onProgress) => {

@@ -149,7 +149,7 @@ const addPageNumbers: ProcessorFn = async (files, onProgress, options) => {
   });
   const result = await doc.save();
   onProgress(100, 'Terminé !');
-  return { files: [{ blob: new Blob([result], { type: 'application/pdf' }), filename: 'numéroté.pdf' }] };
+  return { files: [{ blob: pdfBlob(result), filename: 'numéroté.pdf' }] };
 };
 
 const addWatermark: ProcessorFn = async (files, onProgress, options) => {

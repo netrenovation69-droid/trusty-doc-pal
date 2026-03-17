@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ShieldCheck, Server, Lock, ChevronRight, Globe, Zap, Heart } from "lucide-react";
+import { ShieldCheck, Server, Lock, ChevronRight, Globe, Zap, Heart, Shield, Gauge, FileCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { tools } from "@/constants/tools";
 import { ToolCard } from "@/components/docusur/ToolCard";

@@ -265,7 +265,7 @@ const protectPdf: ProcessorFn = async (files, onProgress, options) => {
   const iv = crypto.getRandomValues(new Uint8Array(12));
   onProgress(60, 'Chiffrement AES-256 en cours…');
   const pdfBytes = await doc.save();
-  const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, pdfBytes);
+  const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, pdfBytes.buffer as ArrayBuffer);
   // Package: magic header + salt(16) + iv(12) + encrypted data
   const magic = encoder.encode('DOCUSUR_ENC_V1\0\0'); // 16 bytes
   const output = new Uint8Array(16 + 16 + 12 + encrypted.byteLength);

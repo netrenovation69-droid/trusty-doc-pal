@@ -58,6 +58,110 @@ const Index = () => {
         </motion.div>
       </section>
 
+      {/* Differentiator Section */}
+      <motion.section variants={itemVariants} className="py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/30 to-background" />
+        <div className="max-w-5xl mx-auto px-6 relative z-10">
+          <div className="text-center mb-16">
+            <motion.p
+              variants={itemVariants}
+              className="text-xs font-bold uppercase tracking-[0.2em] text-destructive mb-4"
+            >
+              Pourquoi Docusûr
+            </motion.p>
+            <motion.h2
+              variants={itemVariants}
+              className="text-3xl md:text-5xl font-black tracking-tighter text-primary mb-6 leading-tight"
+            >
+              La Suite PDF Privée la plus
+              <br />
+              <span className="text-destructive">avancée du marché.</span>
+            </motion.h2>
+            <motion.p
+              variants={itemVariants}
+              className="text-base md:text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed"
+            >
+              Vous cherchez une alternative à Adobe ou iLovePDF, mais vous ne pouvez pas vous permettre de laisser vos documents sensibles transiter sur des serveurs tiers ?{" "}
+              <span className="font-bold text-foreground">Docusûr est la solution.</span>
+            </motion.p>
+          </div>
+
+          {/* Technical differentiator */}
+          <motion.div
+            variants={itemVariants}
+            className="rounded-2xl border border-border bg-card/60 backdrop-blur-sm p-8 md:p-10 mb-14 text-center shadow-sm"
+          >
+            <p className="text-xs font-bold uppercase tracking-[0.15em] text-trust-blue mb-3">
+              Le Différenciateur Technique
+            </p>
+            <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto">
+              Contrairement à nos concurrents, Docusûr utilise le{" "}
+              <span className="font-extrabold text-primary">WebAssembly (WASM)</span> et la{" "}
+              <span className="font-extrabold text-primary">Web Crypto API</span> pour transformer votre navigateur en un{" "}
+              <span className="text-foreground font-semibold">laboratoire de traitement sécurisé</span>.
+            </p>
+          </motion.div>
+
+          {/* 3 Pillars */}
+          <div className="grid md:grid-cols-3 gap-5">
+            {[
+              {
+                icon: Shield,
+                title: "Zéro Infrastructure",
+                description:
+                  "Aucun serveur à maintenir, aucun risque de fuite de données (Data Breach). Vos fichiers restent dans votre navigateur.",
+                accent: "text-trust-blue",
+              },
+              {
+                icon: FileCheck,
+                title: "Conformité Totale",
+                description:
+                  "Répond nativement aux exigences RGPD, HIPAA et aux secrets professionnels. Aucune donnée ne quitte votre appareil.",
+                accent: "text-destructive",
+              },
+              {
+                icon: Gauge,
+                title: "Vitesse Pure",
+                description:
+                  "Pas de temps d'upload. La puissance est locale. Traitement instantané grâce au moteur WebAssembly.",
+                accent: "text-emerald",
+              },
+            ].map((pillar, i) => (
+              <motion.div
+                key={i}
+                variants={itemVariants}
+                whileHover={{ y: -4 }}
+                className="group relative rounded-2xl border border-border/60 bg-card/40 backdrop-blur-md p-8 text-center shadow-sm hover:shadow-lg transition-all duration-300"
+              >
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="relative z-10 flex flex-col items-center gap-5">
+                  <div className={`w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center ${pillar.accent} transition-transform duration-200 group-hover:scale-110`}>
+                    <pillar.icon className="w-7 h-7" />
+                  </div>
+                  <h3 className="text-lg font-bold text-primary">{pillar.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{pillar.description}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <motion.div variants={itemVariants} className="text-center mt-14">
+            <p className="text-base md:text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
+              Offrez à votre équipe un outil <span className="font-bold text-foreground">élégant</span>,{" "}
+              <span className="font-bold text-foreground">puissant</span>, et surtout,{" "}
+              <span className="font-bold text-destructive">véritablement privé</span>.
+            </p>
+            <Link
+              to="/outils"
+              className="inline-flex bg-primary text-primary-foreground px-8 py-3.5 rounded-lg font-bold text-base hover:opacity-90 transition shadow-md"
+            >
+              Découvrir les outils
+            </Link>
+          </motion.div>
+        </div>
+      </motion.section>
+
       {/* Trust Bar */}
       <motion.section variants={itemVariants} className="py-8 border-y border-border bg-secondary/50">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center text-muted-foreground">

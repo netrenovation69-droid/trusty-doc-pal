@@ -105,23 +105,68 @@ const ToolPage = () => {
           </div>
         </motion.div>
 
-        {/* Coming Soon */}
+        {/* Coming Soon — Glassmorphism card */}
         {!config.available ? (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-card p-10 rounded-2xl border border-border text-center space-y-6"
+            className="relative overflow-hidden rounded-2xl border border-border p-10 text-center space-y-6"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
+              backdropFilter: 'blur(20px)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.1)',
+            }}
           >
-            <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center mx-auto">
-              <Cpu className="w-10 h-10 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="text-xl font-bold text-primary mb-2">En cours de développement</p>
-              <p className="text-muted-foreground text-sm max-w-lg mx-auto">{config.comingSoonMessage}</p>
-            </div>
-            <div className="flex items-center justify-center gap-2 text-xs text-trust-blue font-medium">
-              <Lock className="w-3.5 h-3.5" />
-              Fidèle à notre philosophie : zéro serveur, zéro stockage
+            {/* Animated glow */}
+            <motion.div
+              className="absolute -top-20 -right-20 w-60 h-60 rounded-full opacity-20"
+              style={{ background: 'radial-gradient(circle, hsl(var(--trust-blue)) 0%, transparent 70%)' }}
+              animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.25, 0.15] }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            <motion.div
+              className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full opacity-15"
+              style={{ background: 'radial-gradient(circle, hsl(var(--emerald)) 0%, transparent 70%)' }}
+              animate={{ scale: [1, 1.15, 1], opacity: [0.1, 0.2, 0.1] }}
+              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+            />
+
+            <div className="relative z-10 space-y-6">
+              <motion.div
+                className="w-20 h-20 rounded-2xl bg-secondary/50 flex items-center justify-center mx-auto border border-border/50"
+                animate={{ rotateY: [0, 360] }}
+                transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+              >
+                <Cpu className="w-10 h-10 text-trust-blue" />
+              </motion.div>
+
+              <div>
+                <div className="inline-flex items-center gap-2 bg-trust-blue/10 text-trust-blue px-3 py-1 rounded-full text-xs font-semibold mb-3">
+                  <motion.span
+                    className="w-2 h-2 rounded-full bg-trust-blue"
+                    animate={{ opacity: [1, 0.3, 1] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  />
+                  Architecture Privacy-First en cours
+                </div>
+                <p className="text-xl font-bold text-primary mb-2">Bientôt disponible</p>
+                <p className="text-muted-foreground text-sm max-w-lg mx-auto leading-relaxed">{config.comingSoonMessage}</p>
+              </div>
+
+              <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-emerald" />
+                  Zéro serveur
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-trust-blue" />
+                  100% WebAssembly
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Cpu className="w-3.5 h-3.5 text-primary" />
+                  Traitement RAM
+                </span>
+              </div>
             </div>
           </motion.div>
         ) : (

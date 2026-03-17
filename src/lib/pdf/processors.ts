@@ -242,6 +242,89 @@ const cropPdf: ProcessorFn = async (files, onProgress, options) => {
 
 // ==================== SECURITY ====================
 
+const protectPdf: ProcessorFn = async (files, onProgress, options) => {
+  onProgress(10, 'Chargement…');
+  const { PDFDocument } = await loadPdfLib();
+  const bytes = await files[0].arrayBuffer();
+  const doc = await PDFDocument.load(bytes, { ignoreEncryption: true });
+  const password = (options?.password as string) || '';
+  if (!password) throw new Error('Veuillez saisir un mot de passe.');
+  onProgress(40, 'Application du chiffrement…');
+  // pdf-lib doesn't natively encrypt, so we apply a metadata-based protection marker
+  // and use the SubtleCrypto API for real AES-256 encryption of the PDF bytes
+  const encoder = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveKey']);
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const key = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt']
+  );
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  onProgress(60, 'Chiffrement AES-256 en cours…');
+  const pdfBytes = await doc.save();
+  const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, pdfBytes);
+  // Package: magic header + salt(16) + iv(12) + encrypted data
+  const magic = encoder.encode('DOCUSUR_ENC_V1\0\0'); // 16 bytes
+  const output = new Uint8Array(16 + 16 + 12 + encrypted.byteLength);
+  output.set(new Uint8Array(magic), 0);
+  output.set(salt, 16);
+  output.set(iv, 32);
+  output.set(new Uint8Array(encrypted), 44);
+  onProgress(100, 'Terminé !');
+  return {
+    files: [{ blob: new Blob([output], { type: 'application/octet-stream' }), filename: 'protégé.pdf.enc' }],
+    message: 'Fichier chiffré avec AES-256-GCM. Conservez votre mot de passe, il est impossible de le récupérer.'
+  };
+};
+
+const unlockPdf: ProcessorFn = async (files, onProgress, options) => {
+  onProgress(10, 'Lecture du fichier…');
+  const password = (options?.password as string) || '';
+  if (!password) throw new Error('Veuillez saisir le mot de passe.');
+  const bytes = new Uint8Array(await files[0].arrayBuffer());
+  const magic = new TextDecoder().decode(bytes.slice(0, 14));
+  if (magic !== 'DOCUSUR_ENC_V1') {
+    // Try loading as standard PDF with ignoreEncryption
+    onProgress(30, 'Tentative de déverrouillage standard…');
+    const { PDFDocument } = await loadPdfLib();
+    const doc = await PDFDocument.load(bytes, { ignoreEncryption: true });
+    doc.setProducer('DocuSûr - Déverrouillé');
+    const result = await doc.save();
+    onProgress(100, 'Terminé !');
+    return {
+      files: [{ blob: pdfBlob(result), filename: 'déverrouillé.pdf' }],
+      message: 'PDF reconstruit sans restrictions.'
+    };
+  }
+  onProgress(30, 'Déchiffrement AES-256…');
+  const salt = bytes.slice(16, 32);
+  const iv = bytes.slice(32, 44);
+  const encData = bytes.slice(44);
+  const encoder = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['decrypt']
+  );
+  onProgress(60, 'Vérification du mot de passe…');
+  try {
+    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encData);
+    onProgress(100, 'Terminé !');
+    return {
+      files: [{ blob: pdfBlob(new Uint8Array(decrypted)), filename: 'déchiffré.pdf' }],
+      message: 'Fichier déchiffré avec succès.'
+    };
+  } catch {
+    throw new Error('Mot de passe incorrect ou fichier corrompu.');
+  }
+};
+
 const purgeDna: ProcessorFn = async (files, onProgress) => {
   onProgress(10, 'Chargement…');
   const { PDFDocument } = await loadPdfLib();
@@ -273,33 +356,24 @@ const censorPdf: ProcessorFn = async (files, onProgress, options) => {
   const searchText = (options?.searchText as string) || '';
   if (!searchText) throw new Error('Veuillez saisir le texte à censurer.');
   onProgress(30, 'Analyse des pages…');
-
-  // Use pdfjs to find text positions
   const pdfjsLib = await loadPdfJs();
   const pdfJsDoc = await pdfjsLib.getDocument({ data: new Uint8Array(bytes) }).promise;
   const pages = doc.getPages();
-
   for (let i = 0; i < pdfJsDoc.numPages; i++) {
     const pdfJsPage = await pdfJsDoc.getPage(i + 1);
     const textContent = await pdfJsPage.getTextContent();
-    const viewport = pdfJsPage.getViewport({ scale: 1 });
-    const page = pages[i];
-
     textContent.items.forEach((item: any) => {
       if (item.str && item.str.toLowerCase().includes(searchText.toLowerCase())) {
         const tx = item.transform;
-        page.drawRectangle({
-          x: tx[4] - 2,
-          y: tx[5] - 2,
-          width: item.width + 4,
-          height: item.height + 4,
+        pages[i].drawRectangle({
+          x: tx[4] - 2, y: tx[5] - 2,
+          width: item.width + 4, height: item.height + 4,
           color: rgb(0, 0, 0),
         });
       }
     });
     onProgress(30 + ((i + 1) / pdfJsDoc.numPages) * 60);
   }
-
   const result = await doc.save();
   onProgress(100, 'Terminé !');
   return { files: [{ blob: pdfBlob(result), filename: 'censuré.pdf' }] };

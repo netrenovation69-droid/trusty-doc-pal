@@ -10,6 +10,8 @@ import ToolPage from "./pages/ToolPage";
 import SecurityPage from "./pages/SecurityPage";
 import AboutPage from "./pages/AboutPage";
 import CgvPage from "./pages/CgvPage";
+import MentionsLegalesPage from "./pages/MentionsLegalesPage";
+import PolitiqueConfidentialitePage from "./pages/PolitiqueConfidentialitePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +30,8 @@ const App = () => (
             <Route path="securite" element={<SecurityPage />} />
             <Route path="a-propos" element={<AboutPage />} />
             <Route path="cgv" element={<CgvPage />} />
+            <Route path="mentions-legales" element={<MentionsLegalesPage />} />
+            <Route path="politique-de-confidentialite" element={<PolitiqueConfidentialitePage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

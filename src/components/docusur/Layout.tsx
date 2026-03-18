@@ -2,6 +2,7 @@ import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { Outlet } from "react-router-dom";
 import { ScrollToTop } from "./ScrollToTop";
+import { CookieBanner } from "./CookieBanner";
 
 export function Layout() {
   return (
@@ -12,6 +13,7 @@ export function Layout() {
         <Outlet />
       </main>
       <Footer />
+      <CookieBanner />
     </div>
   );
 }

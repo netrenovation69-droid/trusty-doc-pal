@@ -22,6 +22,9 @@ export function Header() {
           <Link to="/outils" className="text-muted-foreground hover:text-primary font-semibold text-sm transition-colors">
             Outils
           </Link>
+          <Link to="/tarifs" className="text-muted-foreground hover:text-primary font-semibold text-sm transition-colors">
+            Tarifs
+          </Link>
           <Link to="/securite" className="text-muted-foreground hover:text-primary font-semibold text-sm transition-colors">
             Sécurité
           </Link>

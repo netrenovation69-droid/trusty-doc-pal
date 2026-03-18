@@ -12,6 +12,7 @@ import AboutPage from "./pages/AboutPage";
 import CgvPage from "./pages/CgvPage";
 import MentionsLegalesPage from "./pages/MentionsLegalesPage";
 import PolitiqueConfidentialitePage from "./pages/PolitiqueConfidentialitePage";
+import TarifsPage from "./pages/TarifsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

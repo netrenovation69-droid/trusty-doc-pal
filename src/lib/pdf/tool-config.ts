@@ -78,11 +78,5 @@ export const toolConfigs: Record<string, ToolConfig> = {
   'html-pdf': { accept: '.html,.htm', multiple: false, available: true },
   ocr: { accept: '.pdf,.jpg,.jpeg,.png', multiple: false, available: true },
   comparer: { accept: '.pdf', multiple: true, minFiles: 2, maxFiles: 2, available: true },
-  traduire: { accept: '.pdf', multiple: false, available: false,
-    comingSoonMessage: 'La traduction locale nécessite des modèles d\'IA embarqués. Intégration WebAssembly avec des modèles de traduction locale en cours.'
-  },
   numeriser: { accept: '.jpg,.jpeg,.png,.webp', multiple: true, minFiles: 1, maxFiles: 20, available: true },
-  workflow: { accept: '.pdf', multiple: true, available: false,
-    comingSoonMessage: 'L\'éditeur de flux de travail visuel permettra d\'enchaîner automatiquement les outils DocuSûr dans un pipeline personnalisé.'
-  },
 };

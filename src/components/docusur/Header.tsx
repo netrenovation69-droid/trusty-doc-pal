@@ -22,6 +22,9 @@ export function Header() {
           <Link to="/outils" className="text-muted-foreground hover:text-primary font-semibold text-sm transition-colors">
             Outils
           </Link>
+          <Link to="/tarifs" className="text-muted-foreground hover:text-primary font-semibold text-sm transition-colors">
+            Tarifs
+          </Link>
           <Link to="/securite" className="text-muted-foreground hover:text-primary font-semibold text-sm transition-colors">
             Sécurité
           </Link>
@@ -55,6 +58,7 @@ export function Header() {
         <nav className="md:hidden border-t border-border bg-card px-6 py-4 space-y-3">
           {[
             { to: "/outils", label: "Outils" },
+            { to: "/tarifs", label: "Tarifs" },
             { to: "/securite", label: "Sécurité" },
             { to: "/a-propos", label: "À propos" },
             { to: "/mentions-legales", label: "Mentions Légales" },

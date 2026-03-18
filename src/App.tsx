@@ -12,6 +12,7 @@ import AboutPage from "./pages/AboutPage";
 import CgvPage from "./pages/CgvPage";
 import MentionsLegalesPage from "./pages/MentionsLegalesPage";
 import PolitiqueConfidentialitePage from "./pages/PolitiqueConfidentialitePage";
+import TarifsPage from "./pages/TarifsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
             <Route index element={<Index />} />
             <Route path="outils" element={<ToolsPage />} />
             <Route path="outils/:id" element={<ToolPage />} />
+            <Route path="tarifs" element={<TarifsPage />} />
             <Route path="securite" element={<SecurityPage />} />
             <Route path="a-propos" element={<AboutPage />} />
             <Route path="cgv" element={<CgvPage />} />

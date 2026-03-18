@@ -42,7 +42,5 @@ export const tools: Tool[] = [
   { id: "comparer", name: "Comparer PDF", description: "Comparez vos documents.", icon: GitCompare, color: "text-trust-blue", category: "Avancé" },
   { id: "censurer", name: "Censurer PDF", description: "Supprimez infos sensibles.", icon: Eraser, color: "text-bright-red", category: "Sécurité" },
   { id: "rogner", name: "Rogner PDF", description: "Réduisez les marges.", icon: Crop, color: "text-trust-blue", category: "Édition" },
-  { id: "traduire", name: "Traduire le PDF", description: "Traduction gérée par IA.", icon: Languages, color: "text-bright-red", category: "Avancé" },
   { id: "purge-adn", name: "Purge d'ADN numérique", description: "Supprimez les métadonnées invisibles.", icon: Fingerprint, color: "text-bright-red", category: "Sécurité" },
-  { id: "workflow", name: "Créer un flux de travail", description: "Automatisez vos tâches.", icon: Workflow, color: "text-trust-blue", category: "Avancé" },
 ];

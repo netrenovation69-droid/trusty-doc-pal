@@ -807,6 +807,87 @@ const comparePdfs: ProcessorFn = async (files, onProgress) => {
   };
 };
 
+// ==================== ANALYSIS ====================
+
+const analyzeStructure: ProcessorFn = async (files, onProgress) => {
+  onProgress(5, 'Chargement de la bibliothèque…');
+  const pdfjsLib = await loadPdfJs();
+  const { PDFDocument } = await loadPdfLib();
+  const bytes = await files[0].arrayBuffer();
+  
+  onProgress(15, 'Extraction des métadonnées…');
+  const pdfLibDoc = await PDFDocument.load(bytes, { ignoreEncryption: true });
+  const metadata: Record<string, string> = {};
+  const title = pdfLibDoc.getTitle();
+  const author = pdfLibDoc.getAuthor();
+  const subject = pdfLibDoc.getSubject();
+  const creator = pdfLibDoc.getCreator();
+  const producer = pdfLibDoc.getProducer();
+  const keywords = pdfLibDoc.getKeywords();
+  const creationDate = pdfLibDoc.getCreationDate();
+  const modDate = pdfLibDoc.getModificationDate();
+  if (title) metadata['Titre'] = title;
+  if (author) metadata['Auteur'] = author;
+  if (subject) metadata['Sujet'] = subject;
+  if (creator) metadata['Créé avec'] = creator;
+  if (producer) metadata['Producteur'] = producer;
+  if (keywords) metadata['Mots-clés'] = keywords;
+  if (creationDate) metadata['Date de création'] = creationDate.toLocaleDateString('fr-FR');
+  if (modDate) metadata['Dernière modification'] = modDate.toLocaleDateString('fr-FR');
+  metadata['Nombre de pages'] = String(pdfLibDoc.getPageCount());
+
+  onProgress(30, 'Analyse de la structure…');
+  const doc = await pdfjsLib.getDocument({ data: new Uint8Array(bytes) }).promise;
+  
+  interface Section { title: string; page: number; level: number; wordCount: number; }
+  const sections: Section[] = [];
+  let totalWords = 0;
+  let totalChars = 0;
+
+  for (let i = 0; i < doc.numPages; i++) {
+    onProgress(30 + (i / doc.numPages) * 60, `Scan page ${i + 1}/${doc.numPages}…`);
+    const page = await doc.getPage(i + 1);
+    const textContent = await page.getTextContent();
+    let pageText = '';
+    let prevFontSize = 0;
+    for (const item of textContent.items as any[]) {
+      if (!item.str || !item.str.trim()) continue;
+      pageText += item.str + ' ';
+      const fontSize = Math.abs(item.transform?.[0] || 12);
+      if (fontSize > 14 && fontSize !== prevFontSize && item.str.trim().length > 2) {
+        sections.push({ title: item.str.trim(), page: i + 1, level: 1, wordCount: 0 });
+      } else if (fontSize > 12 && fontSize !== prevFontSize && item.str.trim().length > 3) {
+        sections.push({ title: item.str.trim(), page: i + 1, level: 2, wordCount: 0 });
+      }
+      prevFontSize = fontSize;
+    }
+    const words = pageText.trim().split(/\s+/).filter(Boolean).length;
+    totalWords += words;
+    totalChars += pageText.length;
+    if (sections.length > 0) sections[sections.length - 1].wordCount += words;
+  }
+
+  if (sections.length === 0) {
+    sections.push({ title: 'Document complet', page: 1, level: 1, wordCount: totalWords });
+  }
+
+  metadata['Nombre de mots'] = totalWords.toLocaleString('fr-FR');
+  metadata['Nombre de caractères'] = totalChars.toLocaleString('fr-FR');
+  metadata['Sections détectées'] = String(sections.length);
+  const firstPage = pdfLibDoc.getPage(0);
+  const { width, height } = firstPage.getSize();
+  metadata['Dimensions'] = `${Math.round(width)} × ${Math.round(height)} pt`;
+
+  onProgress(95, 'Génération du rapport…');
+  const analysisResult = { metadata, sections, summary: { pages: pdfLibDoc.getPageCount(), words: totalWords, characters: totalChars, sectionsCount: sections.length } };
+  const jsonBlob = new Blob([JSON.stringify(analysisResult, null, 2)], { type: 'application/json' });
+  onProgress(100, 'Analyse terminée !');
+  return {
+    files: [{ blob: jsonBlob, filename: 'analyse-structure.json' }],
+    message: `__ANALYSIS_JSON__${JSON.stringify(analysisResult)}`
+  };
+};
+
 // ==================== REGISTRY ====================
 
 function formatBytes(bytes: number): string {
@@ -845,117 +926,4 @@ export const processors: Record<string, ProcessorFn> = {
   ocr: ocrPdf,
   comparer: comparePdfs,
   'analyse-structure': analyzeStructure,
-};
-
-// ==================== ANALYSIS ====================
-
-const analyzeStructure: ProcessorFn = async (files, onProgress) => {
-  onProgress(5, 'Chargement de la bibliothèque…');
-  const pdfjsLib = await loadPdfJs();
-  const { PDFDocument } = await loadPdfLib();
-  const bytes = await files[0].arrayBuffer();
-  
-  onProgress(15, 'Extraction des métadonnées…');
-  const pdfLibDoc = await PDFDocument.load(bytes, { ignoreEncryption: true });
-  const metadata: Record<string, string> = {};
-  const title = pdfLibDoc.getTitle();
-  const author = pdfLibDoc.getAuthor();
-  const subject = pdfLibDoc.getSubject();
-  const creator = pdfLibDoc.getCreator();
-  const producer = pdfLibDoc.getProducer();
-  const keywords = pdfLibDoc.getKeywords();
-  const creationDate = pdfLibDoc.getCreationDate();
-  const modDate = pdfLibDoc.getModificationDate();
-  if (title) metadata['Titre'] = title;
-  if (author) metadata['Auteur'] = author;
-  if (subject) metadata['Sujet'] = subject;
-  if (creator) metadata['Créé avec'] = creator;
-  if (producer) metadata['Producteur'] = producer;
-  if (keywords) metadata['Mots-clés'] = keywords;
-  if (creationDate) metadata['Date de création'] = creationDate.toLocaleDateString('fr-FR');
-  if (modDate) metadata['Dernière modification'] = modDate.toLocaleDateString('fr-FR');
-  metadata['Nombre de pages'] = String(pdfLibDoc.getPageCount());
-
-  onProgress(30, 'Analyse de la structure…');
-  const doc = await pdfjsLib.getDocument({ data: new Uint8Array(bytes) }).promise;
-  
-  interface Section {
-    title: string;
-    page: number;
-    level: number;
-    wordCount: number;
-  }
-  
-  const sections: Section[] = [];
-  let totalWords = 0;
-  let totalChars = 0;
-
-  for (let i = 0; i < doc.numPages; i++) {
-    onProgress(30 + (i / doc.numPages) * 60, `Scan page ${i + 1}/${doc.numPages}…`);
-    const page = await doc.getPage(i + 1);
-    const textContent = await page.getTextContent();
-    
-    let pageText = '';
-    let prevFontSize = 0;
-    
-    for (const item of textContent.items as any[]) {
-      if (!item.str || !item.str.trim()) continue;
-      pageText += item.str + ' ';
-      const fontSize = Math.abs(item.transform?.[0] || 12);
-      
-      // Detect headings by font size change (>14pt = h1, >12pt = h2)
-      if (fontSize > 14 && fontSize !== prevFontSize && item.str.trim().length > 2) {
-        sections.push({ title: item.str.trim(), page: i + 1, level: 1, wordCount: 0 });
-      } else if (fontSize > 12 && fontSize !== prevFontSize && item.str.trim().length > 3) {
-        sections.push({ title: item.str.trim(), page: i + 1, level: 2, wordCount: 0 });
-      }
-      prevFontSize = fontSize;
-    }
-    
-    const words = pageText.trim().split(/\s+/).filter(Boolean).length;
-    totalWords += words;
-    totalChars += pageText.length;
-    if (sections.length > 0) {
-      sections[sections.length - 1].wordCount += words;
-    }
-  }
-
-  // If no sections found, create one per page group
-  if (sections.length === 0) {
-    sections.push({ title: 'Document complet', page: 1, level: 1, wordCount: totalWords });
-  }
-
-  metadata['Nombre de mots'] = totalWords.toLocaleString('fr-FR');
-  metadata['Nombre de caractères'] = totalChars.toLocaleString('fr-FR');
-  metadata['Sections détectées'] = String(sections.length);
-
-  // Get page dimensions
-  const firstPage = pdfLibDoc.getPage(0);
-  const { width, height } = firstPage.getSize();
-  metadata['Dimensions'] = `${Math.round(width)} × ${Math.round(height)} pt`;
-
-  onProgress(95, 'Génération du rapport…');
-  
-  const analysisResult = {
-    metadata,
-    sections,
-    summary: {
-      pages: pdfLibDoc.getPageCount(),
-      words: totalWords,
-      characters: totalChars,
-      sectionsCount: sections.length,
-    }
-  };
-
-  // Create a JSON blob with the structured analysis
-  const jsonBlob = new Blob(
-    [JSON.stringify(analysisResult, null, 2)],
-    { type: 'application/json' }
-  );
-
-  onProgress(100, 'Analyse terminée !');
-  return {
-    files: [{ blob: jsonBlob, filename: 'analyse-structure.json' }],
-    message: `__ANALYSIS_JSON__${JSON.stringify(analysisResult)}`
-  };
 };

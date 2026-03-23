@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { FileUploadZone } from '@/components/docusur/FileUploadZone';
 import { ToolOptions } from '@/components/docusur/ToolOptions';
 import { ProcessingView } from '@/components/docusur/ProcessingView';
+import { AnalysisResultView } from '@/components/docusur/AnalysisResultView';
 import type { ProcessedResult, ToolOption } from '@/lib/pdf/types';
 
 type Stage = 'upload' | 'processing' | 'done' | 'error';

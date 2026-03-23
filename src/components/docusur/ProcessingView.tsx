@@ -1,5 +1,6 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Download, CheckCircle2, Loader2, AlertTriangle } from 'lucide-react';
+import { Download, CheckCircle2, Loader2, AlertTriangle, Sparkles } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { downloadBlob, formatFileSize } from '@/lib/pdf/download';
 import type { ProcessedResult } from '@/lib/pdf/types';
@@ -12,8 +13,38 @@ interface ProcessingViewProps {
   onReset: () => void;
 }
 
+// Confetti particle component
+const ConfettiParticle = ({ delay, x }: { delay: number; x: number }) => (
+  <motion.div
+    className="absolute w-2 h-2 rounded-full"
+    style={{
+      left: `${x}%`,
+      top: '40%',
+      background: `hsl(${Math.random() * 360}, 70%, 60%)`,
+    }}
+    initial={{ opacity: 1, y: 0, scale: 1 }}
+    animate={{
+      opacity: [1, 1, 0],
+      y: [0, -60 - Math.random() * 40, 80 + Math.random() * 40],
+      x: [0, (Math.random() - 0.5) * 100],
+      scale: [1, 1.2, 0.3],
+      rotate: [0, Math.random() * 360],
+    }}
+    transition={{ duration: 1.5, delay, ease: 'easeOut' }}
+  />
+);
+
 export const ProcessingView = ({ progress, status, result, error, onReset }: ProcessingViewProps) => {
+  const [showConfetti, setShowConfetti] = useState(false);
   const isProcessing = !result && !error;
+
+  useEffect(() => {
+    if (result && !error) {
+      setShowConfetti(true);
+      const timer = setTimeout(() => setShowConfetti(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [result, error]);
 
   if (error) {
     return (
@@ -69,19 +100,45 @@ export const ProcessingView = ({ progress, status, result, error, onReset }: Pro
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="bg-card p-8 rounded-2xl border border-emerald/30 space-y-6"
+      className="relative bg-card p-8 rounded-2xl border border-emerald/30 space-y-6 overflow-hidden"
     >
+      {/* Confetti */}
+      {showConfetti && (
+        <div className="absolute inset-0 pointer-events-none z-10">
+          {Array.from({ length: 20 }).map((_, i) => (
+            <ConfettiParticle key={i} delay={i * 0.05} x={10 + (i * 4)} />
+          ))}
+        </div>
+      )}
+
       <div className="text-center space-y-2">
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
-          className="w-16 h-16 rounded-full bg-emerald/10 flex items-center justify-center mx-auto"
+          className="w-16 h-16 rounded-full bg-emerald/10 flex items-center justify-center mx-auto relative"
         >
           <CheckCircle2 className="w-8 h-8 text-emerald" />
+          {/* Glow ring */}
+          <motion.div
+            className="absolute inset-0 rounded-full border-2 border-emerald/40"
+            initial={{ scale: 1, opacity: 0.6 }}
+            animate={{ scale: 1.6, opacity: 0 }}
+            transition={{ duration: 1, delay: 0.3 }}
+          />
         </motion.div>
-        <p className="text-lg font-bold text-foreground">Traitement terminé !</p>
-        {result?.message && <p className="text-sm text-muted-foreground">{result.message}</p>}
+        <motion.div
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="flex items-center justify-center gap-2"
+        >
+          <Sparkles className="w-4 h-4 text-emerald" />
+          <p className="text-lg font-bold text-foreground">Traitement terminé !</p>
+        </motion.div>
+        {result?.message && !result.message.startsWith('__') && (
+          <p className="text-sm text-muted-foreground">{result.message}</p>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -90,7 +147,7 @@ export const ProcessingView = ({ progress, status, result, error, onReset }: Pro
             key={i}
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: i * 0.05 }}
+            transition={{ delay: 0.3 + i * 0.05 }}
             className="flex items-center gap-3 bg-background p-3 rounded-xl border border-border"
           >
             {file.preview && (
@@ -100,12 +157,21 @@ export const ProcessingView = ({ progress, status, result, error, onReset }: Pro
               <p className="text-sm font-medium text-foreground truncate">{file.filename}</p>
               <p className="text-xs text-muted-foreground">{formatFileSize(file.blob.size)}</p>
             </div>
-            <button
+            <motion.button
               onClick={() => downloadBlob(file.blob, file.filename)}
-              className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition"
+              className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition relative overflow-hidden"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
             >
-              <Download className="w-4 h-4" /> Télécharger
-            </button>
+              {/* Glow effect */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/10 to-transparent"
+                animate={{ x: ['-100%', '200%'] }}
+                transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+              />
+              <Download className="w-4 h-4 relative z-10" />
+              <span className="relative z-10">Télécharger</span>
+            </motion.button>
           </motion.div>
         ))}
       </div>

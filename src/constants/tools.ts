@@ -1,7 +1,7 @@
 import {
   FileText, FileArchive, FileSignature, FileType, FileCode,
   Scissors, RotateCw, Lock, Unlock, Scan, ScanText,
-  GitCompare, Eraser, Crop, Fingerprint,
+  GitCompare, Eraser, Crop, Fingerprint, BrainCircuit,
   type LucideIcon
 } from "lucide-react";
 

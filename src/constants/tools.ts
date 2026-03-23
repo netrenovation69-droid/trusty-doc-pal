@@ -1,7 +1,7 @@
 import {
   FileText, FileArchive, FileSignature, FileType, FileCode,
   Scissors, RotateCw, Lock, Unlock, Scan, ScanText,
-  GitCompare, Eraser, Crop, Fingerprint,
+  GitCompare, Eraser, Crop, Fingerprint, BrainCircuit,
   type LucideIcon
 } from "lucide-react";
 
@@ -43,4 +43,5 @@ export const tools: Tool[] = [
   { id: "censurer", name: "Censurer PDF", description: "Supprimez infos sensibles.", icon: Eraser, color: "text-bright-red", category: "Sécurité" },
   { id: "rogner", name: "Rogner PDF", description: "Réduisez les marges.", icon: Crop, color: "text-trust-blue", category: "Édition" },
   { id: "purge-adn", name: "Purge d'ADN numérique", description: "Supprimez les métadonnées invisibles.", icon: Fingerprint, color: "text-bright-red", category: "Sécurité" },
+  { id: "analyse-structure", name: "Analyse de Structure", description: "Extraction intelligente de la structure et métadonnées.", icon: BrainCircuit, color: "text-trust-blue", category: "Avancé" },
 ];

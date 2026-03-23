@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { FileUploadZone } from '@/components/docusur/FileUploadZone';
 import { ToolOptions } from '@/components/docusur/ToolOptions';
 import { ProcessingView } from '@/components/docusur/ProcessingView';
+import { AnalysisResultView } from '@/components/docusur/AnalysisResultView';
 import type { ProcessedResult, ToolOption } from '@/lib/pdf/types';
 
 type Stage = 'upload' | 'processing' | 'done' | 'error';
@@ -206,13 +207,17 @@ const ToolPage = () => {
 
             {/* Processing / Done / Error */}
             {(stage === 'processing' || stage === 'done' || stage === 'error') && (
-              <ProcessingView
-                progress={progress}
-                status={status}
-                result={result}
-                error={error}
-                onReset={handleReset}
-              />
+              id === 'analyse-structure' && stage === 'done' && result ? (
+                <AnalysisResultView result={result} onReset={handleReset} />
+              ) : (
+                <ProcessingView
+                  progress={progress}
+                  status={status}
+                  result={result}
+                  error={error}
+                  onReset={handleReset}
+                />
+              )
             )}
           </>
         )}

@@ -207,13 +207,17 @@ const ToolPage = () => {
 
             {/* Processing / Done / Error */}
             {(stage === 'processing' || stage === 'done' || stage === 'error') && (
-              <ProcessingView
-                progress={progress}
-                status={status}
-                result={result}
-                error={error}
-                onReset={handleReset}
-              />
+              id === 'analyse-structure' && stage === 'done' && result ? (
+                <AnalysisResultView result={result} onReset={handleReset} />
+              ) : (
+                <ProcessingView
+                  progress={progress}
+                  status={status}
+                  result={result}
+                  error={error}
+                  onReset={handleReset}
+                />
+              )
             )}
           </>
         )}

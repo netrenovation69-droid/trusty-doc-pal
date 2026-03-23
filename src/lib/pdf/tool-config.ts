@@ -79,4 +79,5 @@ export const toolConfigs: Record<string, ToolConfig> = {
   ocr: { accept: '.pdf,.jpg,.jpeg,.png', multiple: false, available: true },
   comparer: { accept: '.pdf', multiple: true, minFiles: 2, maxFiles: 2, available: true },
   numeriser: { accept: '.jpg,.jpeg,.png,.webp', multiple: true, minFiles: 1, maxFiles: 20, available: true },
+  'analyse-structure': { accept: '.pdf', multiple: false, available: true },
 };

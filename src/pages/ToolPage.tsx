@@ -9,7 +9,8 @@ import { FileUploadZone } from '@/components/docusur/FileUploadZone';
 import { ToolOptions } from '@/components/docusur/ToolOptions';
 import { ProcessingView } from '@/components/docusur/ProcessingView';
 import { AnalysisResultView } from '@/components/docusur/AnalysisResultView';
-import type { ProcessedResult, ToolOption } from '@/lib/pdf/types';
+import { addHistoryEntry } from '@/lib/session-history';
+import type { ProcessedResult } from '@/lib/pdf/types';
 
 type Stage = 'upload' | 'processing' | 'done' | 'error';
 
@@ -27,7 +28,6 @@ const ToolPage = () => {
   const [result, setResult] = useState<ProcessedResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Initialize default option values
   useEffect(() => {
     if (config?.options) {
       const defaults: Record<string, string | number> = {};
@@ -49,7 +49,7 @@ const ToolPage = () => {
   }, [config, files, options]);
 
   const handleProcess = async () => {
-    if (!id || !processors[id]) return;
+    if (!id || !processors[id] || !tool) return;
     setStage('processing');
     setProgress(0);
     setStatus('Initialisation…');
@@ -63,6 +63,16 @@ const ToolPage = () => {
       }, options);
       setResult(res);
       setStage('done');
+
+      // Save to local history
+      for (const f of files) {
+        addHistoryEntry({
+          fileName: f.name,
+          toolId: id,
+          toolName: tool.name,
+          fileSize: f.size,
+        }).catch(() => {});
+      }
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue.');
       setStage('error');
@@ -106,7 +116,6 @@ const ToolPage = () => {
           </div>
         </motion.div>
 
-        {/* Coming Soon — Glassmorphism card */}
         {!config.available ? (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -118,7 +127,6 @@ const ToolPage = () => {
               boxShadow: '0 8px 32px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.1)',
             }}
           >
-            {/* Animated glow */}
             <motion.div
               className="absolute -top-20 -right-20 w-60 h-60 rounded-full opacity-20"
               style={{ background: 'radial-gradient(circle, hsl(var(--trust-blue)) 0%, transparent 70%)' }}
@@ -131,7 +139,6 @@ const ToolPage = () => {
               animate={{ scale: [1, 1.15, 1], opacity: [0.1, 0.2, 0.1] }}
               transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
             />
-
             <div className="relative z-10 space-y-6">
               <motion.div
                 className="w-20 h-20 rounded-2xl bg-secondary/50 flex items-center justify-center mx-auto border border-border/50"
@@ -140,7 +147,6 @@ const ToolPage = () => {
               >
                 <Cpu className="w-10 h-10 text-trust-blue" />
               </motion.div>
-
               <div>
                 <div className="inline-flex items-center gap-2 bg-trust-blue/10 text-trust-blue px-3 py-1 rounded-full text-xs font-semibold mb-3">
                   <motion.span
@@ -153,42 +159,25 @@ const ToolPage = () => {
                 <p className="text-xl font-bold text-primary mb-2">Bientôt disponible</p>
                 <p className="text-muted-foreground text-sm max-w-lg mx-auto leading-relaxed">{config.comingSoonMessage}</p>
               </div>
-
               <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1.5">
-                  <Lock className="w-3.5 h-3.5 text-emerald" />
-                  Zéro serveur
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-trust-blue" />
-                  100% WebAssembly
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Cpu className="w-3.5 h-3.5 text-primary" />
-                  Traitement RAM
-                </span>
+                <span className="flex items-center gap-1.5"><Lock className="w-3.5 h-3.5 text-emerald" /> Zéro serveur</span>
+                <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-trust-blue" /> 100% WebAssembly</span>
+                <span className="flex items-center gap-1.5"><Cpu className="w-3.5 h-3.5 text-primary" /> Traitement RAM</span>
               </div>
             </div>
           </motion.div>
         ) : (
           <>
-            {/* Upload & Options */}
             {stage === 'upload' && (
               <div className="space-y-6">
                 <FileUploadZone config={config} files={files} onFilesChange={setFiles} />
-
                 {config.options && files.length > 0 && (
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                     <ToolOptions options={config.options} values={options} onChange={setOptions} />
                   </motion.div>
                 )}
-
                 {files.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="space-y-3"
-                  >
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
                     <button
                       onClick={handleProcess}
                       disabled={!canProcess()}
@@ -205,7 +194,6 @@ const ToolPage = () => {
               </div>
             )}
 
-            {/* Processing / Done / Error */}
             {(stage === 'processing' || stage === 'done' || stage === 'error') && (
               id === 'analyse-structure' && stage === 'done' && result ? (
                 <AnalysisResultView result={result} onReset={handleReset} />
